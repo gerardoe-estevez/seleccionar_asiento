@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+    <title>select </title>
+</head>
+<style>
+    *{
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+    .clearfix:after{
+        display:block;
+        clear:both;
+        height:0;
+        visibility:hidden;
+        font-size:0;
+        line-height:0;
+        content:"";
+    }
+    .clearfix{
+        zoom:1
+    }
+    ul,li{
+        list-style: none;
+    }
+    .content{
+        padding: 50px 0;
+    }
+    .content #seat-select{
+        width:4.8rem;
+        margin: 0 auto;
+    }
+    .content .seat{
+        width: 0.12rem;
+        height: 0.12rem;
+        font-size:0.012rem;
+        float: left;
+        margin-left:0.04rem;
+        margin-top: 0.04rem;
+        border: 1px solid #ccc;
+        overflow: hidden;
+    }
+    .content li.on{
+        background-color: orange;
+    }
+    .content li{}
+    #show-more{
+        text-align: center;
+        margin-top: .5rem;
+        font-size: .14rem;
+    }
+</style>
+<body>
+<div class="content">
+    <ul id="seat-select" class="clearfix">
+
+    </ul>
+</div>
+
+<div id="show-more">点击加载更多。。</div>
+<script>
+
+
+
+    function Seat(){
+        this.parentSeatEl = document.querySelector('#seat-select');
+        this.curNum = 0;//当前座位数量
+        this.hasSelectObj={};
+    }
+    Seat.prototype = {
+        constructor: Seat,
+
+        init:function(num){
+            var _this = this;
+            _this.renderSeat(num);
+            _this.bindEvent();
+        },
+        /*渲染座位*/
+        renderSeat: function (num){
+            var _this = this;
+            for(var i=_this.curNum+1;i<_this.curNum+num+1;i++){
+                _this.parentSeatEl.appendChild(parseDom('<li title="'+i+'" class="seat" seat-index="'+i+'"></li>')[0])
+            }
+            _this.curNum+=num;
+        },
+        /*选择座位*/
+        selectSeat:  function (event){
+            var _this = window.seat;
+            var _thisEl = event.target;
+            var _thisNum = _thisEl.getAttribute('seat-index');
+            var hasSelected = _this.hasSelectObj[_thisNum];
+
+            if(!hasSelected){
+                _this.hasSelectObj[_thisNum] = true;
+                _thisEl.classList.add('on');
+            }else{
+                _thisEl.classList.remove('on');
+            }
+            _this.hasSelectObj[_thisNum] = !hasSelected;
+            console.log(_this);
+            console.log(_thisEl);
+
+        },
+        /*绑定事件*/
+        bindEvent: function(){
+            var _this = this;
+            _this.parentSeatEl.addEventListener('click', _this.selectSeat);
+
+            window.onscroll = function(){
+                var scrollTop = getScrollTop();//偏移距离
+                var docH = getScrollHeight();//文档高度
+                var winH = getWindowHeight();//视口高度
+
+                if(docH-winH-scrollTop <= 50){
+                    _this.renderSeat(900);
+                }
+
+            }
+
+        }
+
+    }
+
+    //转换Dom
+    function parseDom(str) {
+        var objE = document.createElement("div");
+        objE.innerHTML = str;
+        return objE.childNodes;
+    }
+
+    //滚动条在Y轴上的滚动距离
+    function getScrollTop() {
+        var scrollTop = 0,
+            bodyScrollTop = 0,
+            documentScrollTop = 0;
+        if (document.body) {
+            bodyScrollTop = document.body.scrollTop;
+        }
+        if (document.documentElement) {
+            documentScrollTop = document.documentElement.scrollTop;
+        }
+        scrollTop = (bodyScrollTop - documentScrollTop > 0) ? bodyScrollTop : documentScrollTop;
+        return scrollTop;
+    }
+    //文档的总高度
+    function getScrollHeight() {
+        var scrollHeight = 0,
+            bodyScrollHeight = 0,
+            documentScrollHeight = 0;
+        if (document.body) {
+            bodyScrollHeight = document.body.scrollHeight;
+        }
+        if (document.documentElement) {
+            documentScrollHeight = document.documentElement.scrollHeight;
+        }
+        scrollHeight = (bodyScrollHeight - documentScrollHeight > 0) ? bodyScrollHeight : documentScrollHeight;
+        return scrollHeight;
+    }
+    //浏览器视口的高度
+    function getWindowHeight() {
+        var windowHeight = 0;
+        if (document.compatMode == "CSS1Compat") {
+            windowHeight = document.documentElement.clientHeight;
+        } else {
+            windowHeight = document.body.clientHeight;
+        }
+        return windowHeight;
+    }
+
+    var resize = 'orientationchange' in window ? 'orientationchange' : 'resize';
+    var resizeFontSize = function(){
+        var width = document.documentElement.clientWidth;
+        document.documentElement.style.fontSize = 100 * (width / 640) + 'px';
+    }
+    window.addEventListener(resize, resizeFontSize, false);
+    document.addEventListener('DOMContentLoaded', resizeFontSize, false);
+
+
+    var seat = new Seat();
+    seat.init(900);
+    document.querySelector('#show-more').addEventListener('click',function(){
+        seat.renderSeat(900);
+    })
+
+</script>
+</body>
+</html>
